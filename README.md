@@ -1,130 +1,194 @@
-Network Intrusion Detection XAI
+# 🛡️ Network Intrusion Detection XAI
+
 A full-stack application for network intrusion detection using Explainable AI (XAI). The project combines a Flask backend for processing network features and generating XAI visualizations with a Next.js frontend for user interaction and result display.
-Deployment Links and Screenshots
 
-Frontend Deployment: Vercel Deployment URL (Placeholder, update after deployment)
-Backend Deployment: Render Deployment URL (Placeholder, update after deployment)
-GitHub Repository: Link to Repo (Placeholder, update with your repo)
+## 🔗 Deployment Links and Screenshots
 
-Screenshots
+- **Frontend Deployment:** [https://v0-frontend-for-ai-demo.vercel.app/](https://v0-frontend-for-ai-demo.vercel.app/)
+- **Backend Deployment:** Render Deployment URL 
 
-Frontend Dashboard: Displays input form, XAI plot cards (Integrated Gradients heatmap, bar plot, LIME explanation), and Gemini summary.
-XAI Plots: Example of Integrated Gradients heatmap served by the backend.
-Form Submission: Input form for 20 network features.
+### 📸 Screenshots
 
-Note: Add screenshots to the screenshots/ folder and update the paths above.
+#### Frontend Dashboard
+![Frontend Dashboard](https://imgur.com/dRKhUDL.png)
+*Displays input form, XAI plot cards (Integrated Gradients heatmap, bar plot, LIME explanation), and Gemini summary.*
 
-1. About
-   The Network Intrusion Detection XAI project is designed to detect network intrusions (e.g., benign vs. malicious traffic) using a deep learning model and provide explainable insights into the model’s predictions. The system:
+#### XAI Plots
+![XAI Plots](https://imgur.com/rHcKDHf.png)
+*Example of Integrated Gradients heatmap served by the backend.*
 
-Accepts Input: Takes 20 network features (e.g., Avg Packet Size, Flow Bytes/s) via a user-friendly frontend.
-Generates Predictions: Uses a pre-trained model to classify network traffic.
-Explains Decisions: Applies XAI techniques (Integrated Gradients, LIME) to produce visualizations (heatmaps, bar plots, feature importance plots).
-Summarizes Results: Integrates Google’s Gemini API to analyze visualizations and summarize key features.
-Serves Visualizations: Delivers plots to the frontend for display.
+#### Form Submission
+![Form Submission](https://imgur.com/iF0Cq3o.png)
+*Input form for 20 network features.*
+
+#### Results View
+![Results View](https://imgur.com/r2AMVxx.png)
+*Viewing results after form submission.*
+
+#### Mobile View
+![Mobile View](https://imgur.com/wcH8Ged.png)
+*Responsive design for mobile devices.*
+
+## 📚 1. About
+
+The Network Intrusion Detection XAI project is designed to detect network intrusions (e.g., benign vs. malicious traffic) using a deep learning model and provide explainable insights into the model's predictions. The system:
+
+- **🔍 Accepts Input:** Takes 20 network features (e.g., Avg Packet Size, Flow Bytes/s) via a user-friendly frontend.
+- **🧠 Generates Predictions:** Uses a pre-trained model to classify network traffic.
+- **💡 Explains Decisions:** Applies XAI techniques (Integrated Gradients, LIME) to produce visualizations (heatmaps, bar plots, feature importance plots).
+- **📊 Summarizes Results:** Integrates Google's Gemini API to analyze visualizations and summarize key features.
+- **🖼️ Serves Visualizations:** Delivers plots to the frontend for display.
 
 The backend is built with Flask, handling model inference, XAI processing, and plot serving. The frontend, created with Next.js and Vercel v0, provides an interactive dashboard for input and result visualization. This project is ideal for cybersecurity researchers, data scientists, and developers interested in XAI and network security.
 
-2. Backend
-   The backend is a Flask application located in Backend/ that processes network features, runs XAI analyses, and serves results and plots.
-   Features
+## ⚙️ 2. Backend
 
-Endpoints:
-POST /predict: Accepts 20 network features, runs Integrated Gradients and LIME, calls Gemini API for a summary, and returns predictions, plot paths, and explanations.
-GET /plots/<filename>: Serves XAI plot images (e.g., ig_heatmap_sample_0_class_Benign.png) from Backend/plots/.
+The backend is a Flask application located in `Backend/` that processes network features, runs XAI analyses, and serves results and plots.
 
-XAI Techniques:
-Integrated Gradients: Generates heatmaps for CNN branch and bar plots for LSTM branch.
-LIME: Produces feature importance plots for individual predictions.
+### Features
 
-Gemini API: Analyzes XAI plots and summarizes influential features.
-CORS: Configured to allow requests from the frontend (http://localhost:3000, http://192.168.56.1:3000).
+**🔌 Endpoints:**
+- `POST /predict`: Accepts 20 network features, runs Integrated Gradients and LIME, calls Gemini API for a summary, and returns predictions, plot paths, and explanations.
+- `GET /plots/<filename>`: Serves XAI plot images (e.g., `ig_heatmap_sample_0_class_Benign.png`) from `Backend/plots/`.
 
-Setup
+**🧪 XAI Techniques:**
+- **Integrated Gradients:** Generates heatmaps for CNN branch and bar plots for LSTM branch.
+- **LIME:** Produces feature importance plots for individual predictions.
 
-Navigate to the backend directory:cd Backend
+**🤖 Gemini API:** Analyzes XAI plots and summarizes influential features.  
+**🔒 CORS:** Configured to allow requests from the frontend (`http://localhost:3000`, `http://192.168.56.1:3000`).
 
-Create and activate a virtual environment (or use conda):conda create -n NidsXaiPy310 python=3.10
+### Setup
+
+1. Navigate to the backend directory:
+```bash
+cd Backend
+```
+
+2. Create and activate a virtual environment (or use conda):
+```bash
+conda create -n NidsXaiPy310 python=3.10
 conda activate NidsXaiPy310
+```
 
-Install dependencies:pip install flask flask-cors numpy torch lime matplotlib python-dotenv
+3. Install dependencies:
+```bash
+pip install flask flask-cors numpy torch lime matplotlib python-dotenv
+```
 
-Set up the .env file with your Google API key:GOOGLE_API_KEY=your-api-key-here
+4. Set up the `.env` file with your Google API key:
+```
+GOOGLE_API_KEY=your-api-key-here
+```
 
-Run the Flask app:python main.py
+5. Run the Flask app:
+```bash
+python main.py
+```
 
-The server runs at http://localhost:5000.
+The server runs at `http://localhost:5000`.
 
-Directory Structure
+### Directory Structure
+```
 Backend/
 ├── .env
 ├── main.py
 ├── plots/
 └── src/
-├── nids_xai_lib.py
-├── nids_model.pth
-└── gemini_utils.py
+    ├── nids_xai_lib.py
+    ├── nids_model.pth
+    └── gemini_utils.py
+```
 
-Testing
+### Testing
 
-Test the /predict endpoint with Postman:curl -X POST http://localhost:5000/predict -H "Content-Type: application/json" -d '{"Avg Packet Size": 120.0, ...}'
+- Test the `/predict` endpoint with Postman:
+```bash
+curl -X POST http://localhost:5000/predict -H "Content-Type: application/json" -d '{"Avg Packet Size": 120.0, ...}'
+```
 
-Access a plot:curl http://localhost:5000/plots/ig_heatmap_sample_0_class_Benign.png
+- Access a plot:
+```bash
+curl http://localhost:5000/plots/ig_heatmap_sample_0_class_Benign.png
+```
 
-3. Frontend
-   The frontend is a Next.js application located in network-intrusion-detection/, generated by Vercel v0. It provides a user interface to input network features, display XAI plots, and show Gemini summaries.
-   Features
+## 🖥️ 3. Frontend
 
-Interactive Dashboard: Built with shadcn/ui and Tailwind CSS, featuring:
-A form for entering 20 network features.
-Cards to display XAI plots (Integrated Gradients heatmap, bar plot, LIME explanation).
-A text area for the Gemini API summary.
+The frontend is a Next.js application located in `network-intrusion-detection/`, generated by Vercel v0. It provides a user interface to input network features, display XAI plots, and show Gemini summaries.
 
-API Integration: Fetches data from the Flask backend (http://localhost:5000/predict) and loads plot images (http://localhost:5000/plots/...).
-Responsive Design: Optimized for desktop and mobile viewing.
+### Features
 
-Setup
+**🎛️ Interactive Dashboard:** Built with shadcn/ui and Tailwind CSS, featuring:
+- A form for entering 20 network features.
+- Cards to display XAI plots (Integrated Gradients heatmap, bar plot, LIME explanation).
+- A text area for the Gemini API summary.
 
-Navigate to the frontend directory:cd network-intrusion-detection
+**🔄 API Integration:** Fetches data from the Flask backend (`http://localhost:5000/predict`) and loads plot images (`http://localhost:5000/plots/...`).  
+**📱 Responsive Design:** Optimized for desktop and mobile viewing.
 
-Install Node.js (LTS) from nodejs.org if not installed.
-Install pnpm (package manager):npm install -g pnpm
+### Setup
 
-Install dependencies:pnpm install
+1. Navigate to the frontend directory:
+```bash
+cd network-intrusion-detection
+```
 
-Run the development server:pnpm run dev
+2. Install Node.js (LTS) from nodejs.org if not installed.
+3. Install pnpm (package manager):
+```bash
+npm install -g pnpm
+```
 
-The app runs at http://localhost:3000 or http://192.168.56.1:3000.
+4. Install dependencies:
+```bash
+pnpm install
+```
 
-Directory Structure
+5. Run the development server:
+```bash
+pnpm run dev
+```
+
+The app runs at `http://localhost:3000` or `http://192.168.56.1:3000`.
+
+### Directory Structure
+```
 network-intrusion-detection/
 ├── app/
-│ ├── page.tsx
-│ ├── layout.tsx
-│ └── globals.css
+│   ├── page.tsx
+│   ├── layout.tsx
+│   └── globals.css
 ├── components/
-│ └── ui/
+│   └── ui/
 ├── public/
 ├── package.json
 ├── tailwind.config.ts
 └── tsconfig.json
+```
 
-Testing
+### Testing
 
-Open http://192.168.56.1:3000 (or http://localhost:3000) in a browser.
-Submit features via the form and verify that plots and the summary load.
-Check the browser console (F12) for fetch errors.
+1. Open `http://192.168.56.1:3000` (or `http://localhost:3000`) in a browser.
+2. Submit features via the form and verify that plots and the summary load.
+3. Check the browser console (F12) for fetch errors.
 
-Deployment
+### Deployment
 
-Push to a GitHub repository:git init
+1. Push to a GitHub repository:
+```bash
+git init
 git add .
 git commit -m "Initial commit"
 git remote add origin <your-repo-url>
 git push origin main
+```
 
-Deploy to Vercel:npm install -g vercel
+2. Deploy to Vercel:
+```bash
+npm install -g vercel
 vercel
+```
 
-4. Training Files
-   This section contains all the raw training files, notebooks, scripts for reference.(Model_Data_Library).
+## 📊 4. Training Files
+
+This section contains all the raw training files, notebooks, scripts for reference (`Model_Data_Library`).
