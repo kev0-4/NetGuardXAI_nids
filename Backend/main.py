@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException, Body
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from src.nids_xai_lib import NIDSXAILib
 from src.gemini_utils import call_gemini_api
@@ -12,14 +13,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set up logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+app = FastAPI()
 
-# Enable CORS for the Next.js frontend
-CORS(app, resources={r"/*": {"origins": "*"}})
+# Enable CORS for all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Verify GOOGLE_API_KEY
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
@@ -28,8 +34,7 @@ if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY environment variable not set")
 
 # Define model and plot paths
-# C:\Users\lemon\Desktop\nids-xai\Backend
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # C:\Users\lemon\Desktop\nids-xai\Backend
 MODEL_PATH = os.path.join(BASE_DIR, 'src', 'nids_model.pth')
 PLOT_DIR = os.path.join(BASE_DIR, 'plots')
 
@@ -78,9 +83,8 @@ FEATURE_INFO = [
 
 FEATURE_NAMES = [name for name, _, _ in FEATURE_INFO]
 
-
-@app.route('/plots/<path:filename>')
-def serve_plot(filename):
+@app.get("/plots/{filename:path}")
+async def serve_plot(filename: str):
     """
     Serve plot images from the plots/ directory.
 
@@ -88,19 +92,22 @@ def serve_plot(filename):
         filename: Name of the plot file (e.g., ig_heatmap_sample_0_class_Benign.png).
 
     Returns:
-        The requested image file.
+        The requested image file or a JSON error response.
     """
     try:
-        return send_from_directory('plots', filename)
+        file_path = os.path.join(PLOT_DIR, filename)
+        if not os.path.exists(file_path):
+            logger.error(f"Plot file not found: {file_path}")
+            raise HTTPException(status_code=404, detail=f"Plot not found: {filename}")
+        return FileResponse(file_path)
     except Exception as e:
         logger.error(f"Error serving plot {filename}: {str(e)}")
-        return jsonify({'error': f'Plot not found: {filename}'}), 404
+        raise HTTPException(status_code=500, detail=f"Error serving plot: {str(e)}")
 
-
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post("/predict")
+async def predict(data: dict = Body(...)):
     """
-    Flask endpoint to accept 20 feature values, run Integrated Gradients and LIME,
+    FastAPI endpoint to accept 20 feature values, run Integrated Gradients and LIME,
     move plots to plots/ directory, call Gemini API, and return results.
 
     Request Body:
@@ -111,37 +118,41 @@ def predict():
         and Gemini API summary.
     """
     try:
-        # Get JSON data from request
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No input data provided'}), 400
-
         # Validate input features
+        if not data:
+            logger.error("No input data provided")
+            raise HTTPException(status_code=400, detail="No input data provided")
+
         input_data = []
         for feature_name, min_val, max_val in FEATURE_INFO:
             if feature_name not in data:
-                return jsonify({'error': f'Missing feature: {feature_name}'}), 400
+                logger.error(f"Missing feature: {feature_name}")
+                raise HTTPException(status_code=400, detail=f"Missing feature: {feature_name}")
             try:
                 value = float(data[feature_name])
                 if not (min_val <= value <= max_val):
-                    return jsonify({
-                        'error': f'Value for {feature_name} must be between {min_val} and {max_val}'
-                    }), 400
+                    logger.error(f"Value for {feature_name} out of range")
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Value for {feature_name} must be between {min_val} and {max_val}"
+                    )
                 input_data.append(value)
             except (ValueError, TypeError):
-                return jsonify({'error': f'Invalid value for {feature_name}: must be a number'}), 400
+                logger.error(f"Invalid value for {feature_name}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid value for {feature_name}: must be a number"
+                )
 
         # Convert to numpy array with shape (1, 20)
         input_data = np.array([input_data], dtype=np.float32)
         logger.info("Input data validated successfully")
 
         # Run Integrated Gradients
-        ig_result = nids.run_integrated_gradients(
-            input_data, target_class=None, steps=20)
+        ig_result = nids.run_integrated_gradients(input_data, target_class=None, steps=20)
 
         # Run LIME
-        lime_result = nids.run_lime(
-            input_data, training_data=None, sample_idx=0, num_features=10)
+        lime_result = nids.run_lime(input_data, training_data=None, sample_idx=0, num_features=10)
 
         # Move plots to plots/ directory
         for plot_path in [ig_result['heatmap_path'], ig_result['bar_plot_path'], lime_result['plot_path']]:
@@ -154,12 +165,9 @@ def predict():
                 logger.warning(f"Plot not found at {src_path}, skipping move")
 
         # Update plot paths in results
-        ig_result['heatmap_path'] = os.path.join(
-            'plots', os.path.basename(ig_result['heatmap_path']))
-        ig_result['bar_plot_path'] = os.path.join(
-            'plots', os.path.basename(ig_result['bar_plot_path']))
-        lime_result['plot_path'] = os.path.join(
-            'plots', os.path.basename(lime_result['plot_path']))
+        ig_result['heatmap_path'] = os.path.join('plots', os.path.basename(ig_result['heatmap_path']))
+        ig_result['bar_plot_path'] = os.path.join('plots', os.path.basename(ig_result['bar_plot_path']))
+        lime_result['plot_path'] = os.path.join('plots', os.path.basename(lime_result['plot_path']))
 
         # Call Gemini API with plots and text prompt
         image_paths = [
@@ -201,14 +209,8 @@ def predict():
         }
 
         logger.info("Analysis completed successfully")
-        return jsonify(response), 200
+        return response
 
     except Exception as e:
         logger.error(f"Error in predict endpoint: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
-
-if __name__ == "__main__":
-    # Ensure plot directory exists
-    os.makedirs(PLOT_DIR, exist_ok=True)
-    app.run(debug=True, host='0.0.0.0', port=8080)
+        raise HTTPException(status_code=500, detail=str(e))
