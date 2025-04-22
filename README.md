@@ -5,29 +5,24 @@ A full-stack application for network intrusion detection using Explainable AI (X
 ## 🔗 Deployment Links and Screenshots
 
 - **Frontend Deployment:** [https://v0-frontend-for-ai-demo.vercel.app/](https://v0-frontend-for-ai-demo.vercel.app/)
-- **Backend Deployment:** Render Deployment URL 
+- **Backend Deployment:** [https://netguardxai-nids.onrender.com](https://netguardxai-nids.onrender.com) 
+*LocalHost prefered, as free tier of render supports only upto 512mb of ram which might cause crashes and hence cors errors when multiple requests are sent*
 
 ### 📸 Screenshots
 
 #### Frontend Dashboard
 ![Frontend Dashboard](https://imgur.com/dRKhUDL.png)
-*Displays input form, XAI plot cards (Integrated Gradients heatmap, bar plot, LIME explanation), and Gemini summary.*
 
-#### XAI Plots
 ![XAI Plots](https://imgur.com/rHcKDHf.png)
-*Example of Integrated Gradients heatmap served by the backend.*
+
+![Form Submission](https://imgur.com/iF0Cq3o.png)
 
 #### Form Submission
-![Form Submission](https://imgur.com/iF0Cq3o.png)
+![Results View](https://imgur.com/r2AMVxx.png)
 *Input form for 20 network features.*
 
-#### Results View
-![Results View](https://imgur.com/r2AMVxx.png)
-*Viewing results after form submission.*
-
-#### Mobile View
+#### Result view and XAI plots
 ![Mobile View](https://imgur.com/wcH8Ged.png)
-*Responsive design for mobile devices.*
 
 ## 📚 1. About
 
