@@ -17,6 +17,28 @@ export default function PredictionPage() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<any>(null)
   const [activeTab, setActiveTab] = useState("summary")
+  const [jsonInput, setJsonInput] = useState<string>(`{
+    "Avg Packet Size": 120.0,
+    "Packet Length Mean": 100.0,
+    "Bwd Packet Length Std": 55.0,
+    "Packet Length Variance": 3000.0,
+    "Bwd Packet Length Max": 250.0,
+    "Packet Length Max": 350.0,
+    "Packet Length Std": 65.0,
+    "Fwd Packet Length Mean": 85.0,
+    "Avg Fwd Segment Size": 85.0,
+    "Flow Bytes/s": 12000.0,
+    "Avg Bwd Segment Size": 95.0,
+    "Bwd Packet Length Mean": 90.0,
+    "Fwd Packets/s": 60.0,
+    "Flow Packets/s": 110.0,
+    "Init Fwd Win Bytes": 8192.0,
+    "Subflow Fwd Bytes": 600.0,
+    "Fwd Packets Length Total": 700.0,
+    "Fwd Act Data Packets": 6.0,
+    "Total Fwd Packets": 12.0,
+    "Subflow Fwd Packets": 12.0
+}`)
 
   const handleSubmit = async (formData: any) => {
     setLoading(true)
@@ -30,6 +52,15 @@ export default function PredictionPage() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleJsonSubmit = () => {
+    try {
+      const parsedData = JSON.parse(jsonInput)
+      handleSubmit(parsedData)
+    } catch (err) {
+      setError("Invalid JSON format. Please check your input.")
     }
   }
 
@@ -62,7 +93,40 @@ export default function PredictionPage() {
                   <CardDescription>Enter network traffic parameters to analyze</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <PredictionForm onSubmit={handleSubmit} isLoading={loading} />
+                  <Tabs defaultValue="form" className="w-full">
+                    <TabsList className="bg-gray-700/50 mb-6">
+                      <TabsTrigger value="form">Form Input</TabsTrigger>
+                      <TabsTrigger value="json">JSON Input</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="form">
+                      <PredictionForm onSubmit={handleSubmit} isLoading={loading} />
+                    </TabsContent>
+                    <TabsContent value="json">
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <textarea
+                            className="w-full h-96 p-4 bg-gray-700/30 text-gray-300 rounded-lg border border-gray-600 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            value={jsonInput}
+                            onChange={(e) => setJsonInput(e.target.value)}
+                          />
+                        </div>
+                        <Button
+                          onClick={handleJsonSubmit}
+                          disabled={loading}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            "Analyze JSON Data"
+                          )}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             </div>
